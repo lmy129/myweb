@@ -14,3 +14,9 @@ class UsernameCountView(View):
         return JsonResponse({'code':0,'count':count,'errmsg':'ok'})
         #else:
             #return JsonResponse({'code':200,'errmsg':'用户名不满足需求'})
+
+class UsermobileCountView(View):
+    #定义检查手机号个数视图
+    def get(self,request,mobile):
+        count = User.objects.filter(mobile=mobile).count()
+        return JsonResponse({'code':0,'count':count,'errmsg':'ok'})

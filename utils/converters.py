@@ -13,3 +13,10 @@ class UsernameConverter:
     #将Python类型转换为url需要的字符串
     #def to_url(self,value):
         #return '%04d' % value
+
+class UsermobileConverter:
+    #定义手机号转换器
+    regex = '\d{11}'
+
+    def to_python(self,value):
+        return value
