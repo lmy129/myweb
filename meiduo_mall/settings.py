@@ -202,3 +202,6 @@ LOGGING = {
         },
     }
 }
+
+#替换用户模型设置；使用自定义的用户模型
+AUTH_USER_MODEL = "users.User"
