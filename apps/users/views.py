@@ -4,6 +4,7 @@ from .models import User
 from django.http import JsonResponse
 import re
 import json
+from django.contrib.auth import login
 
 # Create your views here.
 class UsernameCountView(View):
@@ -57,13 +58,16 @@ class RegisterView(View):
         #if not allow:
             #return JsonResponse({'code':400,'errmsg':'没有同意用户协议'})
         
-        #使用这种方式可以使密码加密
-        User.objects.create_user(username=username,password=password,mobile=mobile)
+        #使用这种方式可以使密码加密;并赋值给user用以登录
+        user = User.objects.create_user(username=username,password=password,mobile=mobile)
 
         #这种方式保存到数据库密码不会加密
         #User.objects.create(username=username,password=password,mobile=mobile)
         #user = User(username=username,password=password,mobile=mobile)
         #user.save()
+
+        #登录
+        login(request,user)
         return JsonResponse({'code':0,'errmsg':'ok'})
 
 

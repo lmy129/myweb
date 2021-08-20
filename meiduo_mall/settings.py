@@ -132,7 +132,8 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#django-redis配置
+'''
+#django-redis配置;注意在windows中不能使用redis
 CACHES = {
     "default":{
         #默认
@@ -153,7 +154,7 @@ CACHES = {
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
-
+'''
 
 #日志设置
 LOGGING = {
