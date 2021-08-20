@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #myapp
     'apps.users.apps.UserConfig',
+    'apps.verifications.apps.VerificationsConfig',
 ]
 
 MIDDLEWARE = [
@@ -132,8 +133,9 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-'''
-#django-redis配置;注意在windows中不能使用redis
+
+#django-redis配置;注意在windows中能使用redis但与其他系统不一样，需要到github上下载msi安装文件
+#在使用redis时不仅settings.py要配置，还要安装django-redis包，还要再系统上安装redis数据库才能使用
 CACHES = {
     "default":{
         #默认
@@ -154,7 +156,7 @@ CACHES = {
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
-'''
+
 
 #日志设置
 LOGGING = {

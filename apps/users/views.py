@@ -26,7 +26,7 @@ class UsermobileCountView(View):
 class RegisterView(View):
     #定义注册视图
     def post(self,request):
-        #从request.body中接收数据，是一个json数据
+        #从request.body中接收数据，是一个json数据[表单数据用request.post接收，非表单数据用body]
         body_data = request.body
         #将接收到的数据转换未字符串
         body_str = body_data.decode()
@@ -66,7 +66,7 @@ class RegisterView(View):
         #user = User(username=username,password=password,mobile=mobile)
         #user.save()
 
-        #登录
+        #登录[状态保持：给客户端保存cookie服务器使用session]
         login(request,user)
         return JsonResponse({'code':0,'errmsg':'ok'})
 
