@@ -16,11 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 #注册自定义转换器
-from utils.converters import UsernameConverter,UsermobileConverter
+from utils.converters import UsernameConverter,UsermobileConverter,UuidConverter
 from django.urls import register_converter
 
 register_converter(UsernameConverter,'username')
 register_converter(UsermobileConverter,'mobile')
+register_converter(UuidConverter,'uuid')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

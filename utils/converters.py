@@ -20,3 +20,10 @@ class UsermobileConverter:
 
     def to_python(self,value):
         return value
+
+class UuidConverter:
+    #定义uuid转换器,这里的正则表示匹配任意字母和符号-并且至少有一个
+    regex = '[\w-]+'
+
+    def to_python(self,value):
+        return str(value)

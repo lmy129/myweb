@@ -14,6 +14,7 @@ class ImagecodeView(View):
         #使用setex方法将接收到的uuid和生成的图片内容放到redis中，并且规定过期时间为100秒
         redis_cli.setex(uuid,100,text)
         #将生成的二进制图片放在响应中返还，这里注意二进制不能使用JSON传递所以没有使用JSONResponse
+        #第二个参数content_type指定传输的是图片，这样在网页中显示不是乱码而是图片
         return HttpResponse(image,content_type='image/png')
 
     
