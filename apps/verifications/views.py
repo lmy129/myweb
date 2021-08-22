@@ -49,6 +49,10 @@ class SmscodeView(View):
             return JsonResponse({'code':400,'errmsg':'图片验证码过期'})
         if image_text != redis_image_text:
             return JsonResponse({'code':400,'errmsg':'验证码输入错误'})
+        #生成验证码之前先检验用户是否频繁使用短信验证码
+        send_flag = redis_cli.get('send_flag_%s' % mobile)
+        if send_flag != None:
+            return JsonResponse({'code':400,'errmsg':'请不要频繁使用短信验证码'})
         #生成随机六位数字验证码
         sms_code = '%06d' % randint(0,999999)
         '''
@@ -56,6 +60,8 @@ class SmscodeView(View):
         是为了区分不同用户所分配的验证码方便验证
         '''
         redis_cli.setex(mobile,300,sms_code)
+        #为了防止用户频繁的使用短信验证码，给当前已经申请发送验证码的手机号添加一个标记，持续60秒
+        redis_cli.setex('send_flag_%s' % mobile,60,1)
         #发送短信验证码
         CCP().send_template_sms(mobile,[sms_code,6],1)
         #返回响应
