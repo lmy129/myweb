@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*(&uz6me^=8r2i8%(jf1dnto8su03zr$w-w6xmkg2u*%1twjz7'
+SECRET_KEY = 'django-insecure-!n3(udl05ya=^zcjw0bmy-neqaplk-b4_qgyryk8#i0i#dhb*b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,16 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #myapp
-    'apps.users.apps.UserConfig',
-    'apps.verifications.apps.VerificationsConfig',
+    'apps.users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -59,7 +57,7 @@ ROOT_URLCONF = 'meiduo_mall.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,10 +83,40 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'USER': 'testone',
-        'PASSWORD': '123456',
-    } 
+        'PASSWORD': '123456'
+    }
 }
 
+#django-redis配置;注意在windows中能使用redis但与其他系统不一样，需要到github上下载msi安装文件
+#在使用redis时不仅settings.py要配置，还要安装django-redis包，还要再系统上安装redis数据库才能使用
+CACHES = {
+    "default":{
+        #默认
+        "BACKEND":"django_redis.cache.RedisCache",
+        "LOCATION":'redis://127.0.0.1:6379/0',
+        "OPTIONS":{
+            "CLIENT_CLASS":"django_redis.client.DefaultClient",
+        }
+    },
+    "session":{
+        #默认
+        "BACKEND":"django_redis.cache.RedisCache",
+        "LOCATION":'redis://127.0.0.1:6379/1',
+        "OPTIONS":{
+            "CLIENT_CLASS":"django_redis.client.DefaultClient",
+        }
+    },
+    "code":{
+        #默认
+        "BACKEND":"django_redis.cache.RedisCache",
+        "LOCATION":'redis://127.0.0.1:6379/2',
+        "OPTIONS":{
+            "CLIENT_CLASS":"django_redis.client.DefaultClient",
+        }
+    },
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "session"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -132,39 +160,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-#django-redis配置;注意在windows中能使用redis但与其他系统不一样，需要到github上下载msi安装文件
-#在使用redis时不仅settings.py要配置，还要安装django-redis包，还要再系统上安装redis数据库才能使用
-CACHES = {
-    "default":{
-        #默认
-        "BACKEND":"django_redis.cache.RedisCache",
-        "LOCATION":'redis://127.0.0.1:6379/0',
-        "OPTIONS":{
-            "CLIENT_CLASS":"django_redis.client.DefaultClient",
-        }
-    },
-    "session":{
-        #默认
-        "BACKEND":"django_redis.cache.RedisCache",
-        "LOCATION":'redis://127.0.0.1:6379/1',
-        "OPTIONS":{
-            "CLIENT_CLASS":"django_redis.client.DefaultClient",
-        }
-    },
-    "code":{
-        #默认
-        "BACKEND":"django_redis.cache.RedisCache",
-        "LOCATION":'redis://127.0.0.1:6379/2',
-        "OPTIONS":{
-            "CLIENT_CLASS":"django_redis.client.DefaultClient",
-        }
-    },
-}
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "session"
-
 
 #日志设置
 LOGGING = {
@@ -214,7 +209,3 @@ LOGGING = {
         },
     }
 }
-
-#替换用户模型设置；使用自定义的用户模型
-AUTH_USER_MODEL = "users.User"
-
