@@ -14,8 +14,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,include
+
+#导入路径转换器，这里放在项目主url里是为了，这样其他应用也可以直接在路由使用路径转换器
+from utils.converters import UsernameConverter,MobileCoverter,UuidCoverter
+from django.urls import register_converter
+
+register_converter(UsernameConverter,'username')
+register_converter(MobileCoverter,'mobile')
+register_converter(UuidCoverter,'uuid')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('',include('apps.users.urls',namespace='users')),
+    path('',include('apps.verifications.urls',namespace='verifications')),
 ]

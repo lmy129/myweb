@@ -13,10 +13,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-!n3(udl05ya=^zcjw0bmy-neqaplk-b4_qgyryk8#i0i#dhb*b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1','www.meiduo.site']
 
 
 # Application definition
@@ -38,15 +38,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #myapp
+    #myappz
     'apps.users.apps.UsersConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    #cors中间件放在最上面
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -209,3 +212,17 @@ LOGGING = {
         },
     }
 }
+
+
+#替换用户模型设置；使用自定义的用户模型
+AUTH_USER_MODEL = "users.User"
+
+#CORS白名单
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
+    'http://www.meiduo.site:8080',
+    'http://www.meiduo.site:8000',
+)
+#允许携带cookie
+CORS_ALLOW_CREDENTIALS = True
