@@ -5,7 +5,9 @@ from libs.captcha.captcha import captcha
 from django.views import View
 from django_redis import get_redis_connection
 from random import randint
-from libs.yuntongxun.sms import CCP
+#from libs.yuntongxun.sms import CCP   -------这里是普通发送短信
+#这里是通过celery实现异步发送短信，也就是返回给前端响应让短信验证按钮倒数，执行发送短信验证码分开执行
+from celery_tasks.sms.tasks import celery_send_sms_code
 # Create your views here.
 
 class ImageCodeView(View):
@@ -81,8 +83,14 @@ class SmsCodeView(View):
         #发送短信验证码之前存入一个标记，防止用户频繁使用短信验证码
         redis_cli.setex('send_flag_%s' % mobile,60,1)
 
-        #发送短信验证码
+        '''
+        #发送短信验证码，使用celery异步发送短信，所以这里先注释
         CCP().send_template_sms(mobile,[sms_code,6],1)
+        '''
+        
+        #使用celery异步发送短信,这里celery_send_sms_code有delay方法是因为使用了celery实例.task装饰器
+        #delay的参数等同于celery_send_sms_code的参数
+        celery_send_sms_code.delay(mobile,sms_code)
 
         #返回响应
         return JsonResponse({'code':0,'errmsg':'ok'})
