@@ -6,4 +6,5 @@ from celery_tasks.main import app
 
 @app.task
 def celery_send_sms_code(mobile,code):
+    #这里5代表短信里提示5分钟内验证码有效，1代表使用的模板编号
     CCP().send_template_sms(mobile,[code,5],1)
