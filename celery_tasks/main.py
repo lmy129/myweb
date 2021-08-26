@@ -19,7 +19,7 @@ app = Celery(main='celery_tasks')
 app.config_from_object('celery_tasks.config')
 
 #让celery自动检测指定包的任务,autodiscover_tasks的参数是一个列表
-#如果有多个包任务，在列表中添加tasks的路径
+#如果有多个包任务，在列表中添加tasks的路径,这里如果不写参数celery就会自动去子应用里去搜索tasks文件
 app.autodiscover_tasks(['celery_tasks.sms'])
 
 '''

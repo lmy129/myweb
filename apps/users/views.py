@@ -5,6 +5,8 @@ from django.http import JsonResponse
 import json
 import re
 from django.contrib.auth import login
+#django内置的验证用户名密码方法
+from django.contrib.auth import authenticate
 # Create your views here.
 class UsernameCountView(View):
     #定义检测用户名个数视图，防止用户名重复
@@ -83,6 +85,61 @@ class RegisterView(View):
         login(request,user)
 
         return JsonResponse({'code':0,'errmsg':'ok'})
+
+class LoginView(View):
+    #定义登录视图
+    '''
+    这里虽然不是新增数据但是还是用post请求，是因为如果使用get请求则用户名密码会作为查询参数直接明文暴露在路由里不安全。
+    查询数据使用get请求，新增数据使用post请求，更新使用put请求，删除使用delete请求
+    '''
+    def post(self,request):
+        '''
+        接收参数，如果前端给的是表单数据则数据在request.POST中，这里前端给的是JSON数据数据在request.body中
+        从JSON中取出数据一般步骤：
+        1. body_data = request.body 将body中的数据赋值给body_data,此时是一个base类型数据
+        2. body_str = body_data.decode() 将body_data中的base数据转换成字符串
+        3. body_dict = json.loads(body_str) 将字符串数据转换为字典
+        这里直接将上面三步写在一起
+        '''
+        now_user = json.loads(request.body.decode())
+
+        #从now_user中取出username和password
+        username = now_user.get('username')
+        password = now_user.get('password')
+        remembered = now_user.get('remembered')
+
+
+        #验证用户名和密码是否为空如果有空值则返回400给前端
+        if not all([username,password]):
+            return JsonResponse({'code':400,'errmsg':'参数不全'})
+
+        '''
+        参数齐全开始验证用户名密码如果通过验证则执行登录实现状态保持
+        user = User.objects.get(username=username)
+        if not username:
+            return JsonResponse({'code':400,'errmsg':'没有该用户'})
+        if password == user.password:
+            login(request,user)
+        这里使用django自带的验证用户名密码模块authenticate,传入用户名和密码如果验证成功则返回User对象如果验证不成功则返回None
+        '''
+        user = authenticate(username=username,password=password)
+        if user == None:
+            return JsonResponse({'code':400,'errmsg':'用户名或密码错误'})
+        login(request,user)
+
+        '''
+        如果用户选择记住选项【这里不是记住用户名密码是记住登录状态下次登录免登陆，而记住用户名密码是下次登录直接自动填充用户名密码在登录页】
+        使用request.session.set_expiry(value)
+        如果参数value为1个整数则session会在value秒后过期，如果value为None则session会在两周后过期，如果value为0则session会在浏览器关闭后过期
+        可以通过settings.py中通过SESSION_COOKIE_AGE来设置全局默认值
+        '''
+        if remembered != True:
+            request.session.set_expiry(0)
+        else:
+            request.session.set_expiry(None)
+        
+        return JsonResponse({'code':0,'errmsg':'ok'})
+
         
 
 
