@@ -4,7 +4,7 @@ from apps.users.models import User
 from django.http import JsonResponse
 import json
 import re
-from django.contrib.auth import login
+from django.contrib.auth import login,logout
 #django内置的验证用户名密码方法
 from django.contrib.auth import authenticate
 
@@ -158,10 +158,30 @@ class LoginView(View):
         '''
         
         response = JsonResponse({'code':0,'errmsg':'ok'})
-        #在返回响应中增加一个cookie信息，用户名
+        #在返回响应中增加一个cookie信息，用户名,还可以添加一个max_age参数来设置cookie过期时间
+        #如果不设置默认是浏览器关闭之后
         response.set_cookie('username',username)
 
         return response
+
+class LogoutView(View):
+    def delete(self,request):
+        '''
+        定义退出视图
+        用户退出登录本质上是解除状态保持，也就是删除session信息
+        然后这里因为我们前面在首页显示用户信息，使用的是在cooki中添加username信息的方法，
+        所以还要再删除cookie中username的信息，否则再首页还会显示你好，用户名的显示
+        '''
+        logout(request)
+
+        #删除cookie中的username信息
+        response = JsonResponse({'code':0,'errmsg':'ok'})
+        response.delete_cookie('username')
+
+        #返回响应
+        return response
+
+
 
         
 
