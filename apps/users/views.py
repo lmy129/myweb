@@ -7,7 +7,9 @@ import re
 from django.contrib.auth import login
 #django内置的验证用户名密码方法
 from django.contrib.auth import authenticate
+
 # Create your views here.
+
 class UsernameCountView(View):
     #定义检测用户名个数视图，防止用户名重复
     def get(self,request,username):
@@ -114,6 +116,16 @@ class LoginView(View):
             return JsonResponse({'code':400,'errmsg':'参数不全'})
 
         '''
+        duo多账户功能实现，利用django内置的authenticate内置检测用户名和密码
+        设置User.USERNAME_FIELD = '字段名' 设置根据什么字段作为用户名查询验证,先使用正则判断用户名输入的是不是手机号，如果是就设置手机号为用户名查询，如果不是就正常以用户名查询
+        这里的User.USERNAME_FIELD = '字段名' 设置可以影响authenticate根据那个字段作为用户来查询
+        '''
+        if re.match('1[345789]\d{9}',username):
+            User.USERNAME_FIELD = 'mobile'
+        else:
+            User.USERNAME_FIELD = 'username'
+
+        '''
         参数齐全开始验证用户名密码如果通过验证则执行登录实现状态保持
         user = User.objects.get(username=username)
         if not username:
@@ -137,8 +149,19 @@ class LoginView(View):
             request.session.set_expiry(0)
         else:
             request.session.set_expiry(None)
+
+        '''
+        在首页展示用户信息，有两种方式：1.通过请求获取用户信息在首页展示，2.在登录的时候将用户名信息添加到cookie里
+        前端可以直接获取这个信息不用再重新请求一次，有利于性能的提高【这里使用第二种方式】
+        增加cookie信息是用【set_cookie('名称',增加信息)】
+        增加session信息是用【request.session('名称',session信息)】
+        '''
         
-        return JsonResponse({'code':0,'errmsg':'ok'})
+        response = JsonResponse({'code':0,'errmsg':'ok'})
+        #在返回响应中增加一个cookie信息，用户名
+        response.set_cookie('username',username)
+
+        return response
 
         
 
