@@ -4,6 +4,8 @@ from apps.users.models import User
 from django.http import JsonResponse
 import json
 import re
+#导入django用于发送邮件的类
+from django.core.mail import send_mail
 from utils.views import NewLoginRequiredMixin
 from django.contrib.auth import login,logout
 #django内置的验证用户名密码方法
@@ -224,6 +226,22 @@ class EmailView(NewLoginRequiredMixin,View):
 
         #保存用户信息
         user.save()
+
+        '''
+        发送邮件
+        subject参数指的是要发送的邮件主题
+        message参数指的是要发送的邮件内容
+        from_email指的是要发送邮件的账号
+        recipient_list指的是要接收邮件的账号，是一个列表
+        '''
+        subject = '主题'
+        message = '邮件主要内容'
+        from_email = '1292689898@qq.com'
+        recipient_list = [email]
+        send_mail(subject=subject,
+        message=message,
+        from_email=from_email,
+        recipient_list=recipient_list)
 
         return JsonResponse({'code':0,'errmsg':'ok'})
 

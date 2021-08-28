@@ -226,3 +226,14 @@ CORS_ORIGIN_WHITELIST = (
 )
 #允许携带cookie
 CORS_ALLOW_CREDENTIALS = True
+
+#设置邮件服务器
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 25
+#发送邮件的邮箱
+EMAIL_HOST_USER = '1292689898@qq.com'
+#在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = 'pffzjzgdpvxbicjh'
+#收件人看到的发件人
+#EMAIL_FROM = '美多商城<1292689898@qq.com>'
