@@ -4,6 +4,7 @@ from apps.users.models import User
 from django.http import JsonResponse
 import json
 import re
+from utils.views import NewLoginRequiredMixin
 from django.contrib.auth import login,logout
 #django内置的验证用户名密码方法
 from django.contrib.auth import authenticate
@@ -180,6 +181,53 @@ class LogoutView(View):
 
         #返回响应
         return response
+
+class CenterView(NewLoginRequiredMixin,View):
+    def get(self,request):
+
+        info_data = {
+            'username':request.user.username,
+            'mobile':request.user.mobile,
+            'email':request.user.email,
+            'email_active':request.user.email_active,
+        }
+        return JsonResponse({'code':0,'errmsg':'ok','info_data':info_data})
+
+class EmailView(NewLoginRequiredMixin,View):
+    '''
+    继承自NewLoginRequiredMixin和View两个类，继承NewLoginRequiredMixin是因为要使用其中的dispatch方法验证用户有没有登录
+    【当前端有请求过来时，在路由中首先调用EmailView的as_view()方法这个时候按照MRO查找NewLoginRequiredMixin
+    没有as_view()方法所以会到View中查找并且执行，然后调用dispatch方法还是首先从NewLoginRequiredMixin中查找之后执行验证用户
+    是否登录，如果没有登录返回错误，如果登陆了则调用父类的dispatch方法由于其父类没有dispatch方法。所以会继续在View中查找dispatch
+    方法，查找到后执行并且根据前端的请求类型交给对应的处理方法函数】
+
+    定义保存验证邮箱视图,这里是更新用户信息，所以使用的是PUT请求
+    字典使用get方法不会报错，但是如果访问数据库使用get当查询不到信息时会返回异常
+    '''
+    def put(self,request):
+
+        #接收传输的email信息
+        body_dict = json.loads(request.body.decode())
+
+        #从字典中取出email
+        email = body_dict.get('email')
+
+        #通过正则匹配检查邮箱格式是否正确
+        if not re.match('([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})',email):
+            return JsonResponse({'code':400,'errmsg':'请输入正确的邮箱'})
+
+        #获取当前登录用户信息
+        user = request.user
+
+        #更新用户信息
+        user.email = email
+
+        #保存用户信息
+        user.save()
+
+        return JsonResponse({'code':0,'errmsg':'ok'})
+
+
 
 
 

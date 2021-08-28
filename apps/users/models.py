@@ -7,7 +7,9 @@ class User(AbstractUser):
     #定义User类
 
     #在原有的用户类AbstractUser基础上拓展一个mobile字段用于存放用户手机号
-    mobile = models.CharField(max_length=11,unique=True)
+    mobile = models.CharField(verbose_name='手机号',max_length=11,unique=True)
+    #拓展一个记录验证邮箱状态的布尔型字段
+    email_active = models.BooleanField(verbose_name='邮箱验证状态',default=False)
 
     class Meta:
         verbose_name = '用户'
