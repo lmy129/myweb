@@ -224,6 +224,7 @@ class EmailView(NewLoginRequiredMixin,View):
 
         #获取当前登录用户信息
         user = request.user
+        username = user.username
 
         #更新用户信息
         user.email = email
@@ -255,8 +256,9 @@ class EmailView(NewLoginRequiredMixin,View):
         recipient_list=recipient_list,
         html_message=html_message)
         '''
-
-        celery_send_email.delay(token,email)
+        #这里不加delay也可以发送邮件，但是走的是正常的函数调用发送邮件，不是添加任务队列执行异步发送邮件
+        #因为delay的作用就是将任务添加到任务队列中
+        celery_send_email.delay(username,token,email)
 
         return JsonResponse({'code':0,'errmsg':'ok'})
 
