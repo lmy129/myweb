@@ -4,6 +4,10 @@ from apps.users.models import User
 from django.http import JsonResponse
 import json
 import re
+#使用celery异步发送邮件
+from apps.users.tasks import celery_send_email
+from apps.users.models import User
+from .utils import encryption_userid,decrypt_userid
 #导入django用于发送邮件的类
 from django.core.mail import send_mail
 from utils.views import NewLoginRequiredMixin
@@ -230,20 +234,46 @@ class EmailView(NewLoginRequiredMixin,View):
         '''
         发送邮件
         subject参数指的是要发送的邮件主题
-        message参数指的是要发送的邮件内容
-        from_email指的是要发送邮件的账号
-        recipient_list指的是要接收邮件的账号，是一个列表
+        message参数指的是要发送的邮件内容，主要用于发送文本信息。如果想要实现HTML按钮超链接等效果需要使用【html_message】参数
+        例：html_message = "点击按钮进行激活<a href='http://www.meiduo.site'>激活</a>"
+        from_email指的是要发送邮件的账号,这里如果写成from_email = '美多商城<1292689898@qq.com>'那么用户看到的发件人将会是美多商城
+        recipient_list指的是要接收邮件的账号，是一个列表。
         '''
+
+        #首先将要在链接中传输的参数进行加密
+        token = encryption_userid(user.id)
+
+        '''
+        这一部分内容转为使用celery异步发送邮件
         subject = '主题'
-        message = '邮件主要内容'
+        html_message = "点击按钮激活邮箱<a href='http://www.meiduo.site:8000/activation_emails/?token=%s&email=%s'>激活</a>" % (token,email)
         from_email = '1292689898@qq.com'
-        recipient_list = [email]
+        recipient_list = [email,'fa1292689898@163.com']
         send_mail(subject=subject,
-        message=message,
+        message="",
         from_email=from_email,
-        recipient_list=recipient_list)
+        recipient_list=recipient_list,
+        html_message=html_message)
+        '''
+
+        celery_send_email.delay(token,email)
 
         return JsonResponse({'code':0,'errmsg':'ok'})
+
+class ActivationEmailView(View):
+    def get(self,request):
+        token = request.GET.get('token')
+        user_id = decrypt_userid(token)
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'code':400,'errmsg':'用户不存在'})
+        else:
+            user.email_active = True
+            user.save()
+        return JsonResponse({'code':0,'errmsg':'ok'})
+        
+
 
 
 

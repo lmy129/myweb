@@ -20,7 +20,7 @@ app.config_from_object('celery_tasks.config')
 
 #让celery自动检测指定包的任务,autodiscover_tasks的参数是一个列表
 #如果有多个包任务，在列表中添加tasks的路径,这里如果不写参数celery就会自动去子应用里去搜索tasks文件
-app.autodiscover_tasks(['celery_tasks.sms'])
+app.autodiscover_tasks(['celery_tasks.sms','apps.users'])
 
 '''
 完成之后需要执行【celery -A celery_tasks.main worker -l INFO】来启动消费者，也就是执行任务者来执行任务
