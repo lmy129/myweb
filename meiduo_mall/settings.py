@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #myappz
     'apps.users.apps.UsersConfig',
     'corsheaders',
+    'apps.areas.apps.AreasConfig',
 ]
 
 MIDDLEWARE = [
