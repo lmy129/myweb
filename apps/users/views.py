@@ -29,7 +29,6 @@ class MobileCountView(View):
         count = User.objects.filter(mobile=mobile).count()
         return JsonResponse({'code':0,'count':count,'errmsg':'ok'})
 
-
 class RegisterView(View):
     #定义注册视图
     def post(self,request):
