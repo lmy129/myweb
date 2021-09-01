@@ -1,9 +1,11 @@
+from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views import View
 from apps.users.models import User
 from django.http import JsonResponse
 import json
 import re
+from .models import Address
 #使用celery异步发送邮件
 from apps.users.tasks import celery_send_email
 from apps.users.models import User
@@ -274,6 +276,90 @@ class ActivationEmailView(View):
             user.save()
         return JsonResponse({'code':0,'errmsg':'ok'})
         
+class CreateAddressView(View):
+    #定义新增收货地址视图
+
+    def post(self,request):
+
+        #接收参数,先将Json数据转换为字符串，然后再转换为字典
+        data = json.loads(request.body.decode())
+
+        #从data中拿出参数
+        receiver = data.get('receiver')
+        province_id = data.get('province_id')
+        city_id = data.get('city_id')
+        district_id = data.get('district_id')
+        place = data.get('place')
+        mobile = data.get('mobile')
+        tel = data.get('tel')
+        email = data.get('email')
+        user = request.user
+
+        #验证必填参数
+        if not all([receiver,province_id,city_id,district_id,place,mobile]):
+            return JsonResponse({'code':400,'errmsg':'参数不全'})
+        #验证手机号是否符合规则
+        if not re.match('1[345789]\d{9}',mobile):
+            return JsonResponse({'code':400,'errmsg':'手机号不正确'})
+        
+        #新建地址保存到数据库
+        address = Address(user=request.user,
+        title=receiver, #title没有传输过来，使用收货人作为地址命名
+        receiver=receiver,
+        province_id=province_id,
+        city_id=city_id,
+        district_id=district_id,
+        place=place,
+        mobile=mobile)
+        #保存地址
+        address.save()
+
+        #建立一个地址信息字典作为响应返回给前端
+        address_dict = {
+            'id':address.id,
+            'title':address.receiver,
+            'receiver':address.receiver,
+            'province':address.province.name,
+            'city':address.city.name,
+            'district':address.district.name,
+            'place':address.place,
+            'mobile':address.mobile,
+        }
+
+        #返回响应
+        return JsonResponse({'code':0,'errmsg':'ok','address':address_dict})
+
+class AddressView(NewLoginRequiredMixin,View):
+    #定义展示地址视图，只有登录用户能看到
+
+    def get(self,request):
+        #获取用户性信息
+        user = request.user
+        #获取地址信息
+        addresses = Address.objects.filter(user=user,is_deleted=False)
+
+        #创建一个空列表用于存放转换的字典数据
+        addresses_list = []
+        #将获取到的对象转换成字典数据
+        for address in addresses:
+            addresses_list.append({
+            'id':address.id,
+            'title':address.receiver,
+            'receiver':address.receiver,
+            'province':address.province.name,
+            'city':address.city.name,
+            'district':address.district.name,
+            'place':address.place,
+            'mobile':address.mobile,
+            'tel':address.tel,
+            'email':address.email,
+            })
+
+        #返回响应
+        return JsonResponse({'code':0,'errmsg':'ok','addresses':addresses_list})
+
+        
+
 
 
 

@@ -11,4 +11,6 @@ urlpatterns = [
     path('info/',views.CenterView.as_view(),name='info'),
     path('emails/',views.EmailView.as_view(),name='email'),
     path('activation_emails/',views.ActivationEmailView.as_view(),name='activationemails'),
+    path('addresses/create/',views.CreateAddressView.as_view(),name='createaddress'),
+    path('addresses/',views.AddressView.as_view(),name='addresses'),
 ]
