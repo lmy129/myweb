@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'corsheaders',
     'apps.areas.apps.AreasConfig',
+    'apps.goods.apps.GoodsConfig',
+    #'ckeditor',
+    #'ckeditor_uploader',
 ]
 
 MIDDLEWARE = [
