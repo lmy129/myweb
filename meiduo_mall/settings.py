@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'apps.areas.apps.AreasConfig',
     'apps.goods.apps.GoodsConfig',
+    'apps.contents.apps.ContentsConfig',
     #'ckeditor',
     #'ckeditor_uploader',
 ]
@@ -64,7 +65,7 @@ ROOT_URLCONF = 'meiduo_mall.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

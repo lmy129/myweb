@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo mysql -u root -p liumengyan meiduo < goods_data.sql
+sudo mysql -uroot -pliumengyan meiduo < goods_data.sql  

@@ -29,4 +29,5 @@ urlpatterns = [
     path('',include('apps.users.urls',namespace='users')),
     path('',include('apps.verifications.urls',namespace='verifications')),
     path('',include('apps.areas.urls',namespace='areas')),
+    path('',include('apps.goods.urls',namespace='goods')),
 ]
