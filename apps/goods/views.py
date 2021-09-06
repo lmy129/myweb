@@ -91,4 +91,25 @@ class ListView(View):
         #返回响应
         return JsonResponse({'code':0,'errmsg':'ok','breadcrumb':breadcrumb,'count':total_num,'list':sku_list})
 
+class HotListView(View):
+    '''热销商品列表'''
+    def get(self,request,category_id):
+        #获取分类商品数据
+        try:
+            category = GoodsCategory.objects.get(pk=category_id)
+        except GoodsCategory.DoesNotExist:
+            return JsonResponse({'code':0,'errmsg':'参数缺失'})
+        
+        #根据商品分类获取商品数据
+        skus = SKU.objects.filter(category=category,is_launched=True).order_by('sales')
 
+        hot_list = []
+        for sku in skus[:5]:
+            hot_list.append({
+                'id':sku.id,
+                'name':sku.name,
+                'price':sku.price,
+                'default_image_url':sku.default_image_url,
+                'sales':sku.sales,
+            })
+        return JsonResponse({'code':0,'errmsg':'ok','hot_list':hot_list})

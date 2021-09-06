@@ -38,12 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #myappz
+    #myapps
     'apps.users.apps.UsersConfig',
     'corsheaders',
     'apps.areas.apps.AreasConfig',
     'apps.goods.apps.GoodsConfig',
     'apps.contents.apps.ContentsConfig',
+    #haystack
+    'haystack',
     #'ckeditor',
     #'ckeditor_uploader',
 ]
@@ -242,3 +244,12 @@ EMAIL_HOST_USER = '1292689898@qq.com'
 EMAIL_HOST_PASSWORD = 'pffzjzgdpvxbicjh'
 #收件人看到的发件人
 #EMAIL_FROM = '美多商城<1292689898@qq.com>'
+
+#haystack对接elasticsearch的配置
+HAYSTACK_CONNECTIONS = {
+    'default':{
+        'ENGINE':'haystack.backends.elasticsearch2_backend.ElasticsearchEngine',
+        'URL':'http://192.168.200.128:9200/',
+        'INDEX_NAME':'haystack',
+    }
+}

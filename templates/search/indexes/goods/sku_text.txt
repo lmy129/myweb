@@ -1,0 +1,5 @@
+#要检索的字段
+#object代表要检索的模型实例
+{{objext.name}}
+{{object.caption}}
+{{object.id}}
