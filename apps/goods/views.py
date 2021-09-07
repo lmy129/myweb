@@ -113,3 +113,26 @@ class HotListView(View):
                 'sales':sku.sales,
             })
         return JsonResponse({'code':0,'errmsg':'ok','hot_list':hot_list})
+
+from haystack.views import SearchView
+class SKUSearchView(SearchView):
+    '''定义查询数据的视图'''
+    def create_response(self):
+        #获取要查询的数据，haystack已经定义好了
+        context = self.get_context()
+
+        sku_list = []
+        for sku in context['page'].object_list:
+            sku_list.append({
+                'id':sku.object.id,
+                'name':sku.object.name,
+                'price':sku.object.price,
+                'default_image_url':sku.object.default_image_url,
+                'searchkey':context.get('query'),
+                'page_size':context['page'].paginator.num_pages,
+                'count':context['page'].paginator.count
+
+            })
+        
+        #json默认是字典数据，这里是一个列表字典所以直接传递，然后加safe=False参数
+        return JsonResponse(sku_list,safe=False)
