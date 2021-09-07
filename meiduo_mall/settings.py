@@ -248,7 +248,7 @@ EMAIL_HOST_PASSWORD = 'pffzjzgdpvxbicjh'
 #haystack对接elasticsearch的配置
 HAYSTACK_CONNECTIONS = {
     'default':{
-        'ENGINE':'haystack.backends.elasticsearch2_backend.ElasticsearchEngine',
+        'ENGINE':'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
         'URL':'http://192.168.200.128:9200/',
         'INDEX_NAME':'haystack',
     }
