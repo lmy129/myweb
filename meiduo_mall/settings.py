@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.contents.apps.ContentsConfig',
     #haystack
     'haystack',
+    'django_crontab',
     #'ckeditor',
     #'ckeditor_uploader',
 ]
@@ -253,3 +254,9 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME':'haystack',
     }
 }
+
+#定时任务【定时更新静态化页面】配置
+#元素的第一个参数是周期【见笔记分时日月周】;第二个参数是函数的名字;第三个参数是输入日志的指定文件
+CRONJOBS = [
+    ('*/36 * * * *','apps.goods.views.generic_meiduo_index','>> ' + os.path.join(BASE_DIR,'logs/crontab.log')),
+]
