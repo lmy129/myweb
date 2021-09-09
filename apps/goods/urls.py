@@ -7,4 +7,5 @@ urlpatterns = [
     path('list/<category_id>/skus/',views.ListView.as_view(),name='listsku'),
     path('hot/<category_id>/',views.HotListView.as_view(),name='hotlist'),
     path('search/',views.SKUSearchView(),name='skusearch'),
+    path('detail/visit/<category_id>/',views.CategoryVisitCountView.as_view(),name='skuvisit'),
 ]

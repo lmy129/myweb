@@ -1,3 +1,5 @@
+from apps.goods.models import SKU
+from django_redis import get_redis_connection
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views import View
@@ -358,7 +360,33 @@ class AddressView(NewLoginRequiredMixin,View):
         #返回响应
         return JsonResponse({'code':0,'errmsg':'ok','addresses':addresses_list})
 
+class HistoryView(View):
+    '''定义用户浏览记录视图'''
+    def post(self,request):
+        #获取参数
+        data = json.loads(request.body.decode())  
+        #获取用户信息
+        user = request.user
+        #获取前端传递的商品ID参数
+        sku_id = data.get('sku_id')
+
+        #查询是否存在该商品
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return JsonResponse({'code':400,'errmsg':'该商品不存在'})
         
+        #建立与redis的链接,这里是链接到【history】3号库---具体设置在settings中
+        redis_cli = get_redis_connection('history')
+        #去重操作，在浏览记录中不能有重复的记录，如果一个商品浏览多次，则先删除一条数据，再新建一条记录
+        redis_cli.lrem('history_%s' % user.id,sku.id)
+        #新建一条记录到redis中
+        redis_cli.lpush('history_%s' % user.id,sku.id)
+        #只在redis中保留五条数据，也就是五条浏览记录,这里采用的不是str的key,value保存方式而是使用的是list列表
+        redis_cli.ltrim('history_%s' % user.id,0,4)
+
+        return JsonResponse('code':0,'errmsg':'ok')
+
 
 
 
