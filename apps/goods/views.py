@@ -19,11 +19,13 @@ from utils.goods import get_categories,get_breadcrumb
 
 #上传成功会返回一个字典数据，字典中有可以访问这个文件的file_id
 #client.upload_by_filename('/home/liumengyan/pkq.jpg')
+
+'''
 class IndexView(View):
     
     def get(self,request):
         #提供首页商品分类和首页广告数据
-        '''
+        
         注释掉设置为静态化页面
         #提供商品分类数据
         categories = get_categories()
@@ -39,8 +41,9 @@ class IndexView(View):
             'categories':categories,
             'contents':contents,
         }
-        '''
+        
         return render(request,'index.html')
+'''
 
 class ListView(View):
     '''特定商品类别的商品列表数据'''
@@ -139,12 +142,12 @@ class SKUSearchView(SearchView):
         #json默认是字典数据，这里是一个列表字典所以直接传递，然后加safe=False参数
         return JsonResponse(sku_list,safe=False)
 
-
+'''
 class DetailView(View):
     
     #定义商品详情页视图
     def get(self,request,sku_id):
-        '''
+        
         改为使用静态化页面
         try:
             sku = SKU.objects.get(id=sku_id)
@@ -167,9 +170,10 @@ class DetailView(View):
             'sku':sku,
             'specs':goods_specs,
         }
-        '''
+        
 
         return render(request,'%s.html' % sku_id)
+'''
 
 class CategoryVisitCountView(View):
     '''定义统计商品访问数量视图'''

@@ -363,6 +363,7 @@ class AddressView(NewLoginRequiredMixin,View):
 class HistoryView(View):
     '''定义用户浏览记录视图'''
     def post(self,request):
+        #将用户的浏览记录添加到redis中
         #获取参数
         data = json.loads(request.body.decode())  
         #获取用户信息
@@ -378,14 +379,38 @@ class HistoryView(View):
         
         #建立与redis的链接,这里是链接到【history】3号库---具体设置在settings中
         redis_cli = get_redis_connection('history')
-        #去重操作，在浏览记录中不能有重复的记录，如果一个商品浏览多次，则先删除一条数据，再新建一条记录
-        redis_cli.lrem('history_%s' % user.id,sku.id)
+        #去重操作，在浏览记录中不能有重复的记录，如果一个商品浏览多次，则先删除一条数据，再新建一条记录!这里的0是代表删除所有这个商品编号的记录
+        redis_cli.lrem('history_%s' % user.id,0,sku.id)
         #新建一条记录到redis中
         redis_cli.lpush('history_%s' % user.id,sku.id)
         #只在redis中保留五条数据，也就是五条浏览记录,这里采用的不是str的key,value保存方式而是使用的是list列表
         redis_cli.ltrim('history_%s' % user.id,0,4)
 
-        return JsonResponse('code':0,'errmsg':'ok')
+        return JsonResponse({'code':0,'errmsg':'ok'})
+
+    def get(self,request):
+        #展示用户浏览记录
+        #获取用户信息
+        user = request.user
+        #从redis中获取商品id
+        redis_cli = get_redis_connection('history')
+        #取出全部的五个数据
+        ids = redis_cli.lrange('hidtory_%s' % user.id,0,4)
+        #初始化一个空列表
+        history_list = []
+        #查询商品信息
+        for sku_id in ids:
+            sku = SKU.objects.get(pk=sku_id)
+            #将查询对象转化为字典
+            history_list.append({
+                'id':sku.id,
+                'name':sku.name,
+                'default_image_url':sku.default_image_url,
+                'price':sku.price,
+            })
+
+        #返回响应
+        return JsonResponse({'code':0,'errmsg':'ok','skus':history_list})
 
 
 

@@ -13,4 +13,5 @@ urlpatterns = [
     path('activation_emails/',views.ActivationEmailView.as_view(),name='activationemails'),
     path('addresses/create/',views.CreateAddressView.as_view(),name='createaddress'),
     path('addresses/',views.AddressView.as_view(),name='addresses'),
+    path('browse_histories/',views.HistoryView.as_view(),name='history'),
 ]
