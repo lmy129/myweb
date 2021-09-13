@@ -8,7 +8,7 @@ import pickle
 import base64
 
 # Create your views here.
-def CartsView(View):
+class CartsView(View):
     '''购物车视图，采取登录用户和不登录用户都可使用购物车功能方案
     登录用户的购物车数据保存在redis中【哈希结构】
     不登录用户的购物车数据保存在cookie中【字典结构，但是使用base64进行重新编码】'''
@@ -34,10 +34,22 @@ def CartsView(View):
         if user.is_authenticated:
             #链接到redis
             redis_cli = get_redis_connection('carts')
+            '''
             #用哈希表保存商品id和数量
-            redis_cli.hset('carts_%s' % user.id,sku.id,count)
+            #redis_cli.hset('carts_%s' % user.id,sku.id,count),改为使用hincrby方法可以自动累加数量，当数量为负数时也可以减少
+            redis_cli.hincrby('carts_%s' % user.id,sku.id,count)
             #用集合保存商品id用于判断是否打钩选中
             redis_cli.sadd('selected_%s' % user.id,sku.id)
+            使用pipeline优化代码提升性能[减少链接redis的次数，使用pipeline收集指令，然后一次执行]
+            '''
+            pipeline = redis_cli.pipeline()
+            #收集指令
+            pipeline.hincrby('carts_%s' % user.id,sku.id,count)
+            #收集指令
+            pipeline.sadd('selected_%s' % user.id,sku_id)
+            #执行指令，一定要有这一步，不然收集的指令不会链接redis然后执行
+            pipeline.execute()
+            return JsonResponse({'code':0,'errmsg':'ok'})
         else:
             #从请求cookie中获取购物车数据
             cookie_carts = request.COOKIES.get('carts')
@@ -95,7 +107,7 @@ def CartsView(View):
                 }
         else:
             #获取购物车数据
-            cookie_carts = request.COOKIE.get('carts')
+            cookie_carts = request.COOKIES.get('carts')
             #判断有没有cookie数据
             if cookie_carts != None:
                 #将购物车数据进行解密
@@ -122,4 +134,95 @@ def CartsView(View):
             })
         return JsonResponse({'code':0,'errmsg':'ok','carts_skus':skus_list})
 
+    def put(self,request):
+        #修改购物车数据
+
+        #接收参数
+        user = request.user
+        data = json.loads(request.body.decode())
+        count = data.get('data')
+        selected = data.get('selected')
+        sku_id = data.get('sku_id')
+
+        #验证数据
+        try:
+            sku = SKU.objects.get(pk=sku_id)
+        except SKU.DoesNotExist:
+            return JsonResponse({'code':400,'errmsg':'没有此商品'})
+        
+        try:
+            count = int(count)
+        except Exception:
+            count = 1
+
+        #判断用户是否登录
+        if user.is_anthenticated:
+            #链接redis
+            redis_cli = get_redis_connection('carts')
+            #将数据更新到redis中的购物车数据中
+            redis_cli.hset('carts_%s' % user.id,sku_id,count)
+            #更新选中状态数据
+            if selected:
+                redis_cli.sadd('selected_%s' % user.id,sku_id)
+            else:
+                redis_cli.srem('selected_%s' % user.id,sku_id)
+            #返回响应
+            return JsonResponse({'code':0,'errmsg':'ok','cart_sku':{'count':count,'selected':selected}})
+        else:
+            #获取购物车数据并进行解密
+            carts = request.COOKIES.get('carts')
+            #判断有没有购物车数据
+            if carts != None:
+                carts = pickle.loads(base64.b64decode(carts))
+            else:
+                carts = {}
+            #判断商品有没有在购物车中
+            if sku_id in carts:
+                carts[sku_id]['count'] = count
+                carts[sku_id]['selected'] = selected
+            #将购物车数据再次加密
+            carts_byte = pickle.dumps(carts)
+            carts_byte_base64 = base64.b64encode(carts_byte)
+            #将购物车数据添加到cookie中
+            response = JsonResponse({'code':0,'errmsg':'ok'})
+            response.set_cookie('carts',carts_byte_base64.decode(),max_age=3600*24*12)
+
+    def delete(self,request):
+        #在购物车中删除数据
+
+        #接收参数
+        user = request.user
+        data = json.loads(request.body.decode())
+        sku_id = data.get('sku_id')
+
+        try:
+            sku = SKU.objects.get(pk=sku_id)
+        except SKU.DoesNotExist:
+            return JsonResponse({'code':400,'errmsg':'没有此商品'})
+
+        if user.is_anthenticated:
+            #链接redis
+            redis_cli = get_redis_connection('carts')
+            #删除redis中购物车对应的商品数据
+            redis_cli.hdel('carts_%s' % user.id,sku_id)
+            #删除redis中选中状态数据
+            redis_cli.srem('selected_%s' % user.id,sku_id)
+            return JsonResponse({'code':0,'errmsg':'ok'})
+        else:
+            carts = request.COOKIES.get('carts')
+            #验证有没有数据
+            if carts != None:
+                #解密
+                carts = pickle.loads(base64.b64decode(carts))
+            else:
+                #初始化一个空字典
+                carts = {}
+            #从字典中删除商品数据
+            del carts[sku_id]
+            #对更新后的数据重新加密返回
+            carts_byte = pickle.dumps(carts)
+            carts_byte_base64 = base64.b64encode(carts_byte)
+            response = JsonResponse({'code':0,'errmsg':'ok'})
+            response.set_cookie('carts',carts_byte_base64.decode(),max_age=3600*24*14)
+            return response
 

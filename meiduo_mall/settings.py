@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.areas.apps.AreasConfig',
     'apps.goods.apps.GoodsConfig',
     'apps.contents.apps.ContentsConfig',
+    'apps.carts.apps.CartsConfig',
     #haystack
     'haystack',
     'django_crontab',
@@ -129,6 +130,14 @@ CACHES = {
         #用于存储浏览历史记录
         "BACKEND":"django_redis.cache.RedisCache",
         "LOCATION":'redis://127.0.0.1:6379/3',
+        "OPTIONS":{
+            "CLIENT_CLASS":"django_redis.client.DefaultClient",
+        }
+    },
+    "carts":{
+        #用于存储购物车数据
+        "BACKEND":"django_redis.cache.RedisCache",
+        "LOCATION":'redis://127.0.0.1:6379/4',
         "OPTIONS":{
             "CLIENT_CLASS":"django_redis.client.DefaultClient",
         }

@@ -4,6 +4,7 @@ var vm = new Vue({
     data: {
         host,
         username: sessionStorage.username || localStorage.username,
+        user_id: sessionStorage.user_id || localStorage.user_id,
         token: sessionStorage.token || localStorage.token,
         tab_content: {
             detail: true,
@@ -35,39 +36,25 @@ var vm = new Vue({
     mounted: function(){
         // 添加用户浏览历史记录
         this.get_sku_id();
-
-        axios.post(this.host+'/browse_histories/', {
-            sku_id: this.sku_id
-        },{
-                responseType: 'json',
-                withCredentials:true,
+        // 添加用户浏览历史记录
+        if (this.user_id) {
+            axios.post(this.host+'/browse_histories/', {
+                sku_id: this.sku_id
+            }, {
+                headers: {
+                    'Authorization': 'JWT ' + this.token
+                }
             })
-            .then(response=>{
-                console.log(response)
-
-            })
-            .catch(error=>{
-                console.log(error)
-            })
-
+        }
         this.get_cart();
-        this.get_hot_goods();
         this.get_comments();
     },
     methods: {
-         // 退出登录按钮
-        logoutfunc: function () {
-            var url = this.host + '/logout/';
-            axios.delete(url, {
-                responseType: 'json',
-                withCredentials:true,
-            })
-                .then(response => {
-                    location.href = 'login.html';
-                })
-                .catch(error => {
-                    console.log(error.response);
-                })
+        // 退出
+        logout: function(){
+            sessionStorage.clear();
+            localStorage.clear();
+            location.href = '/login.html';
         },
         // 控制页面标签页展示
         on_tab_content: function(name){
@@ -91,45 +78,27 @@ var vm = new Vue({
             }
         },
          // 添加购物车
-        add_cart: function(){
-            var url = this.host + '/carts/'
-            axios.post(url, {
-                    sku_id: parseInt(this.sku_id),
-                    count: this.sku_count
-                }, {
-                    responseType: 'json',
-                    withCredentials: true
-                })
+        add_cart: function() {
+            axios.post(this.host + '/cart/', {
+                sku_id: parseInt(this.sku_id),
+                count: this.sku_count
+            }, {
+                headers: {
+                    'Authorization': 'JWT ' + this.token
+                },
+                responseType: 'json',
+                withCredentials: true
+            })
                 .then(response => {
-                    alert('添加购物车成功');
                     this.cart_total_count += response.data.count;
                 })
                 .catch(error => {
-                    console.log(error);
+                    alert(error.response.message[0]);
+                    console.log(error.response.data);
                 })
         },
-       get_cart(){
-        let url = this.host + '/carts/simple/';
-        axios.get(url, {
-            responseType: 'json',
-            withCredentials:true,
-        })
-            .then(response => {
-                this.carts = response.data.cart_skus;
-                this.cart_total_count = 0;
-                for(let i=0;i<this.carts.length;i++){
-                    if (this.carts[i].name.length>25){
-                        this.carts[i].name = this.carts[i].name.substring(0, 25) + '...';
-                    }
-                    this.cart_total_count += this.carts[i].count;
-                }
-            })
-            .catch(error => {
-                console.log(error);
-            })
-    },
-        // 获取热销商品数据
-        get_hot_goods: function(){
+        // 获取购物车数据
+        get_cart: function(){
 
         },
         // 获取商品评价信息
