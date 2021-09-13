@@ -171,6 +171,8 @@ class LoginView(View):
         #在返回响应中增加一个cookie信息，用户名,还可以添加一个max_age参数来设置cookie过期时间
         #如果不设置默认是浏览器关闭之后
         response.set_cookie('username',username)
+        from apps.carts.utils import merge_cookie_to_redis
+        response = merge_cookie_to_redis(request,response)
 
         return response
 
