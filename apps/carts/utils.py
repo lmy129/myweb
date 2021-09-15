@@ -1,5 +1,7 @@
 '''
 合并购物车数据，以cookie数据为主
+因为是登录的时候合并购物车数据
+所以这个函数在users.views中登录视图中调用
 '''
 import pickle
 import base64

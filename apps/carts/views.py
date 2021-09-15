@@ -99,10 +99,10 @@ class CartsView(View):
             #将登录用户的购物车数据转换成与未登录用户购物车数据一致，便于最后重复使用代码
             #初始化一个字典
             carts = {}
-            #遍历商品ID和数量，将数据添加到字典中
+            #遍历商品ID和数量，将数据添加到字典中,使用int强制进行转换，因为redis取出的数据是base类型
             for sku_id,count in sku_id_count.items():
-                carts[sku_id]={
-                    'count':count,
+                carts[int(sku_id)]={
+                    'count':int(count),
                     'selected':sku_id in selected_ids,
                 }
         else:
