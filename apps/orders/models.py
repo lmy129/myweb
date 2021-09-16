@@ -37,7 +37,7 @@ class OrderInfo(BaseModel):
     #与用户表关联，为一对多关系，并且当用户下有订单信息时不能删除该用户信息【on_delete=models.PROTECT】
     user = models.ForeignKey(User,on_delete=models.PROTECT,verbose_name='下单用户')
     #与地址表关联，为一对多关系，并且当有订单用到该地址信息是，不能删除该地址信息
-    address = models.ForeignKey(Address,on_delete=models.PROTECT,verbosee_name='收货地址')
+    address = models.ForeignKey(Address,on_delete=models.PROTECT,verbose_name='收货地址')
     total_count = models.IntegerField(verbose_name='商品总数',default=1)
     #商品总金额字段，为金额字段，设置最大位数为10位【包含小数的位数】，并且小数位最多为2位
     total_amount = models.DecimalField(verbose_name='商品总金额',max_digits=10,decimal_places=2)
@@ -49,6 +49,9 @@ class OrderInfo(BaseModel):
         db_table = 'tb_order_info'
         verbose_name = '订单基本信息'
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.order_id
 
 
 class OrderGoods(BaseModel):
@@ -62,7 +65,7 @@ class OrderGoods(BaseModel):
         (5,'100分'),
     )
     order = models.ForeignKey(OrderInfo,related_name='skus',on_delete=models.CASCADE,verbose_name='订单')
-    sku = models.ForeignKey(SKU,ondelete=models.PROTECT,verbose_name='订单商品')
+    sku = models.ForeignKey(SKU,on_delete=models.PROTECT,verbose_name='订单商品')
     count = models.IntegerField(verbose_name='数量',default=1)
     price = models.DecimalField(verbose_name='单价',max_digits=10,decimal_places=2)
     comment = models.TextField(verbose_name='评价信息',default='')

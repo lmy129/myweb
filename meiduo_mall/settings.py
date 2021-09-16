@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.goods.apps.GoodsConfig',
     'apps.contents.apps.ContentsConfig',
     'apps.carts.apps.CartsConfig',
+    'apps.orders.apps.OrdersConfig',
     #haystack
     'haystack',
     'django_crontab',
