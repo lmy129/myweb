@@ -150,12 +150,23 @@ class OrderCommitView(NewLoginRequiredMixin,View):
                     #创建一个回滚点，判断库存是否充足，如果库存不足回滚到开始点
                     transaction.savepoint_rollback(point)
                     return JsonResponse({'code':400,'errmsg':'库存不足'})
-                #调整库存
+                '''#调整库存
                 sku.stock -= count
                 #调整销量
                 sku.sales += count
                 sku.save()
-
+                使用乐观锁解决超卖问题
+                '''
+                #先保存一个库存数据
+                old_stock = sku.stock
+                #使用一个变量接收要更新的数据
+                new_stock = sku.stock - count
+                new_sales = sku.sales + count
+                #判断能不能更新数据,当前商品查询到的库存要与保存的库存数据一致才可以操作数据【证明没有人在操作这个数据】
+                result = SKU.objects.filter(pk=sku.id,stock=old_stock).update(stock=new_stock,sales=new_sales)
+                #当更新成功时result为1，不成功则result为0
+                if result == 0:
+                    return JsonResponse({'code':400,'errmsg':'下单失败'})
                 orderinfo.total_count += count
                 orderinfo.total_amount += (count * sku.price)
 
