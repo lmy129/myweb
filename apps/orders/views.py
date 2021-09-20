@@ -13,6 +13,7 @@ from decimal import Decimal
 from django_redis import get_redis_connection
 #导入事务模块
 from django.db import transaction
+from time import sleep
 # Create your views here.
 '''
 订单页面
@@ -141,41 +142,48 @@ class OrderCommitView(NewLoginRequiredMixin,View):
 
             #查询单个商品信息
             for sku_id,count in carts.items():
-                try:
+                #for i in range(10)重复10次
+                while True:
+                    #try:   在事务中不使用try错误捕获，以免出现意料之外的操作
                     sku = SKU.objects.get(pk=sku_id)
-                except SKU.DoesNotExist:
-                    return JsonResponse({'code':400,'errmsg':'没有此商品'})
-                
-                if sku.stock < count:
-                    #创建一个回滚点，判断库存是否充足，如果库存不足回滚到开始点
-                    transaction.savepoint_rollback(point)
-                    return JsonResponse({'code':400,'errmsg':'库存不足'})
-                '''#调整库存
-                sku.stock -= count
-                #调整销量
-                sku.sales += count
-                sku.save()
-                使用乐观锁解决超卖问题
-                '''
-                #先保存一个库存数据
-                old_stock = sku.stock
-                #使用一个变量接收要更新的数据
-                new_stock = sku.stock - count
-                new_sales = sku.sales + count
-                #判断能不能更新数据,当前商品查询到的库存要与保存的库存数据一致才可以操作数据【证明没有人在操作这个数据】
-                result = SKU.objects.filter(pk=sku.id,stock=old_stock).update(stock=new_stock,sales=new_sales)
-                #当更新成功时result为1，不成功则result为0
-                if result == 0:
-                    return JsonResponse({'code':400,'errmsg':'下单失败'})
-                orderinfo.total_count += count
-                orderinfo.total_amount += (count * sku.price)
+                    #except SKU.DoesNotExist:
+                    #return JsonResponse({'code':400,'errmsg':'没有此商品'})
+                    
+                    if sku.stock < count:
+                        #创建一个回滚点，判断库存是否充足，如果库存不足回滚到开始点
+                        #transaction.savepoint_rollback(point)
+                        #return JsonResponse({'code':400,'errmsg':'库存不足'})
+                        sleep(0.005)
+                        continue
+                    '''#调整库存
+                    sku.stock -= count
+                    #调整销量
+                    sku.sales += count
+                    sku.save()
+                    使用乐观锁解决超卖问题
+                    '''
+                    #先保存一个库存数据
+                    old_stock = sku.stock
+                    #使用一个变量接收要更新的数据
+                    new_stock = sku.stock - count
+                    new_sales = sku.sales + count
+                    #判断能不能更新数据,当前商品查询到的库存要与保存的库存数据一致才可以操作数据【证明没有人在操作这个数据】
+                    result = SKU.objects.filter(pk=sku.id,stock=old_stock).update(stock=new_stock,sales=new_sales)
+                    #当更新成功时result为1，不成功则result为0
+                    if result == 0:
+                        #回滚事务到开始点
+                        transaction.get_rollback(point)
+                        return JsonResponse({'code':400,'errmsg':'下单失败'})
+                    orderinfo.total_count += count
+                    orderinfo.total_amount += (count * sku.price)
 
-                OrderGoods.objects.create(
-                    order = orderinfo,
-                    sku = sku,
-                    count = count,
-                    price = sku.price
-                )
+                    OrderGoods.objects.create(
+                        order = orderinfo,
+                        sku = sku,
+                        count = count,
+                        price = sku.price
+                    )
+                    break
             orderinfo.save()
             #提交点，如果整个过程没有问题，则会提交修改，这里可以省略因为with语句会自动提交
             transaction.savepoint_commit(point)
