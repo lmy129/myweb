@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.contents.apps.ContentsConfig',
     'apps.carts.apps.CartsConfig',
     'apps.orders.apps.OrdersConfig',
+    'apps.pay.apps.PayConfig',
     #haystack
     'haystack',
     'django_crontab',
@@ -278,3 +279,13 @@ HAYSTACK_CONNECTIONS = {
 CRONJOBS = [
     ('*/36 * * * *','apps.goods.views.generic_meiduo_index','>> ' + os.path.join(BASE_DIR,'logs/crontab.log')),
 ]
+
+#支付宝支付设置
+ALIPAY_APPID = '支付宝应用ID'
+ALIPAY_DEBYG = True
+ALIPAY_URL = '支付宝支付网关'
+ALIPAY_RETURN_URL = '支付后要跳转的地址'
+#美多应用私钥文件路径
+APP_PRIVATE_KEY_PATH = os.path.join(BASE_DIR,'apps/pay/key/app_private_key.pem')
+#支付宝公钥
+ALIPAY_PUBLIC_KEY_PATH = os.path.join(BASE_DIR,'apps/pay/key/alipay_public_key.pem')
